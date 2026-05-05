@@ -5,6 +5,10 @@ class Company(models.Model):
     name = models.CharField(max_length=128, unique=True)
     address = models.TextField(blank=True, null=True)
 
+    class Meta:
+        verbose_name = "Company"
+        verbose_name_plural = "Companies"
+
     def __str__(self):
         return self.name
     

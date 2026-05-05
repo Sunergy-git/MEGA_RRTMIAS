@@ -1,0 +1,25 @@
+<h2>Engine Dashboard</h2>
+
+<table border="1">
+    <tr>
+        <th>Company</th>
+        <th>Vessel</th>
+        <th>Engine</th>
+        <th>Model</th>
+        <th>Action</th>
+    </tr>
+
+    {% for e in engines %}
+    <tr>
+        <td>{{ e.vessel.company.name }}</td>
+        <td>{{ e.vessel.name }}</td>
+        <td>{{ e.serial_number }}</td>
+        <td>{{ e.model_name }}</td>
+        <td>
+            <a href="/dashboard/engine/{{ e.engine_id }}/">
+                View Live
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
