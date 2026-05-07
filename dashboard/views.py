@@ -10,3 +10,8 @@ def home(request):
         )
 
     return render(request, "dashboard/home.html", {"engines": engines})
+
+def live_engine(request, engine_id):
+    return render(request, "dashboard/live_engine.html", {
+        "engine_id": engine_id
+    })

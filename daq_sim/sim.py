@@ -3,11 +3,17 @@ DAQ Simulator (Engine digital twin)
 - In-process tick generator for processor.services to import and consume.
 - Integer RPM, consequential anomalies, engine_id included.
 """
+import os
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "MEGA_RRTMIAS.settings")
+django.setup()
 
 import time
 import json
 import random
 from datetime import datetime, timezone
+from processor.models import EngineMetaData
 
 # -------------------------
 # CONFIG
@@ -28,7 +34,7 @@ ANOMALY_STEP_MAX = 0.02
 ANOMALY_MAX = 1.0
 
 # Engine identifier emitted in every tick (must match EngineMetaData.id in DB)
-ENGINE_ID = 1
+ENGINE_ID = 2
 
 # -------------------------
 # INITIAL SMOOTH STATE
@@ -274,10 +280,14 @@ def generate_tick_json():
 # Manual CLI test
 # -------------------------
 if __name__ == "__main__":
-    print("Starting sim CLI. Ctrl+C to stop.")
+    from processor.tasks import process_engine_tick
+
+    print("Starting Celery simulator... Ctrl+C to stop")
+
     try:
         while True:
-            print(generate_tick_json())
+            tick = generate_tick_dict()
+            process_engine_tick.delay(tick)
             time.sleep(TICK_INTERVAL)
     except KeyboardInterrupt:
-        print("Simulator stopped by user.")
+        print("Simulator stopped")

@@ -6,6 +6,9 @@ from django.utils.timezone import now
 
 from .serializers import EngineDataSerializer
 from processor.models import EngineMetaData, ProcessedFeatures
+from django.http import JsonResponse
+
+
 
 
 @api_view(['POST'])
@@ -44,3 +47,16 @@ def ingest_engine_data(request):
     )
 
     return Response({"status": "stored", "id": pf.id})
+def latest_engine_data(request, engine_id):
+    obj = ProcessedFeatures.objects.filter(
+        engine_id=engine_id
+    ).order_by('-id').first()
+
+    if not obj:
+        return JsonResponse({})
+
+    return JsonResponse({
+        "rpm": obj.rpm,
+        "lub_oil_pressure": obj.lub_oil_pressure,
+        "jacket_cw_outlet_temp": obj.jacket_cw_outlet_temp
+    })

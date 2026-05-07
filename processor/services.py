@@ -205,68 +205,57 @@ def compute_pca(pf):
 
 
 # ---------------------------------------------------------------------
-# MAIN LOOP (Django ORM)
+# Task for Celery worker
 # ---------------------------------------------------------------------
-def start_processor_loop():
-    print("Processor starting (Django ORM version)...")
+def process_tick(raw):
+    engine_id = raw.get("engine_id")
 
-    if not EngineMetaData.objects.exists():
-        print("No EngineMetaData exists — create one first.")
+    if engine_id is None:
+        print("No engine_id in tick")
         return
 
-    while True:
-        raw = generate_tick_dict()
-        engine_id = raw.get("engine_id")
+    try:
+        meta = EngineMetaData.objects.get(
+        engine__engine_id=engine_id
+    )
+    except EngineMetaData.DoesNotExist:
+        print(f"No EngineMetaData linked to Engine id={engine_id}")
+        return
 
-        if engine_id is None:
-            time.sleep(TICK_INTERVAL)
-            continue
+    engineered = compute_engineered_features(raw, meta)
+    exh = raw.get("exhaust_temp", [None] * 6)
 
-        try:
-            meta = EngineMetaData.objects.get(id=engine_id)
-        except EngineMetaData.DoesNotExist:
-            print(f"No EngineMetaData for id={engine_id}")
-            time.sleep(TICK_INTERVAL)
-            continue
+    with transaction.atomic():
+        pf = ProcessedFeatures.objects.create(
+            timestamp=now(),
+            engine=meta,
+            rpm=int(raw.get("rpm") or 0),
+            lub_oil_pressure=raw.get("lub_oil_pressure"),
+            jacket_cw_outlet_temp=raw.get("jacket_cw_outlet_temp"),
+            lub_oil_flow=raw.get("lub_oil_flow"),
+            cooling_water_flow=raw.get("cooling_water_flow"),
+            boost_air_temp=raw.get("boost_air_temp"),
+            boost_air_pressure=raw.get("boost_air_pressure"),
+            boost_air_flow_after_cooler=raw.get("boost_air_flow"),
+            bmep=raw.get("bmep"),
+            combustion_temp=raw.get("combustion_temp"),
+            exhaust_temp_c1=exh[0],
+            exhaust_temp_c2=exh[1],
+            exhaust_temp_c3=exh[2],
+            exhaust_temp_c4=exh[3],
+            exhaust_temp_c5=exh[4],
+            exhaust_temp_c6=exh[5],
+            fuel_temp=raw.get("fuel_temp"),
+            fuel_flow=raw.get("fuel_flow"),
+            fuel_pressure=raw.get("fuel_pressure"),
+            fuel_pump_rack=raw.get("fuel_pump_rack"),
+            exhaust_manifold_pressure=raw.get("exhaust_manifold_pressure"),
+            **engineered,
+            raw_meta={"source": "sim"},
+        )
 
-        engineered = compute_engineered_features(raw, meta)
-        exh = raw.get("exhaust_temp", [None] * 6)
+    compute_rolling_stats(pf)
+    compute_alarms(pf)
+    compute_pca(pf)
 
-        with transaction.atomic():
-            pf = ProcessedFeatures.objects.create(
-                timestamp=now(),
-                engine=meta,
-                rpm=int(raw.get("rpm") or 0),
-                lub_oil_pressure=raw.get("lub_oil_pressure"),
-                jacket_cw_outlet_temp=raw.get("jacket_cw_outlet_temp"),
-                lub_oil_flow=raw.get("lub_oil_flow"),
-                cooling_water_flow=raw.get("cooling_water_flow"),
-                boost_air_temp=raw.get("boost_air_temp"),
-                boost_air_pressure=raw.get("boost_air_pressure"),
-                boost_air_flow_after_cooler=raw.get("boost_air_flow"),
-                bmep=raw.get("bmep"),
-                combustion_temp=raw.get("combustion_temp"),
-                exhaust_temp_c1=exh[0],
-                exhaust_temp_c2=exh[1],
-                exhaust_temp_c3=exh[2],
-                exhaust_temp_c4=exh[3],
-                exhaust_temp_c5=exh[4],
-                exhaust_temp_c6=exh[5],
-                fuel_temp=raw.get("fuel_temp"),
-                fuel_flow=raw.get("fuel_flow"),
-                fuel_pressure=raw.get("fuel_pressure"),
-                fuel_pump_rack=raw.get("fuel_pump_rack"),
-                exhaust_manifold_pressure=raw.get("exhaust_manifold_pressure"),
-                **engineered,
-                raw_meta={"source": "sim"},
-            )
-
-        compute_rolling_stats(pf)
-        compute_alarms(pf)
-        compute_pca(pf)
-
-        time.sleep(TICK_INTERVAL)
-
-
-if __name__ == "__main__":
-    start_processor_loop()
+    print(f"Processed tick for engine {engine_id}")

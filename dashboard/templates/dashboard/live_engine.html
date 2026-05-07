@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Engine Monitor</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #38bdf8;
+        }
+
+        .card-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 220px;
+        }
+
+        .value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        canvas {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Live Engine Monitoring</h1>
+
+    <div class="card-container">
+
+        <div class="card">
+            <h3>RPM</h3>
+            <div class="value" id="rpm">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Lub Oil Pressure</h3>
+            <div class="value" id="lop">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Cooling Water Temp</h3>
+            <div class="value" id="cwt">--</div>
+        </div>
+
+        <div class="card">
+            <h3>Fuel Oil Consumption</h3>
+            <div class="value" id="foc">--</div>
+        </div>
+
+    </div>
+
+    <canvas id="rpmChart"></canvas>
+    <canvas id="lopChart"></canvas>
+    <canvas id="tempChart"></canvas>
+
+<script>
+
+const rpmData = [];
+const lopData = [];
+const tempData = [];
+const labels = [];
+
+const rpmChart = new Chart(document.getElementById('rpmChart'), {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'RPM',
+            data: rpmData,
+            borderWidth: 2
+        }]
+    }
+});
+
+const lopChart = new Chart(document.getElementById('lopChart'), {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Lub Oil Pressure',
+            data: lopData,
+            borderWidth: 2
+        }]
+    }
+});
+
+const tempChart = new Chart(document.getElementById('tempChart'), {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Cooling Water Temp',
+            data: tempData,
+            borderWidth: 2
+        }]
+    }
+});
+
+async function fetchData() {
+
+    const response = await fetch('/api/engine/{{ engine_id }}/latest/');
+    const data = await response.json();
+
+    document.getElementById('rpm').innerText = data.rpm;
+    document.getElementById('lop').innerText = data.lub_oil_pressure;
+    document.getElementById('cwt').innerText = data.jacket_cw_outlet_temp;
+    document.getElementById('foc').innerText = data.fuel_oil_flow;
+
+    const time = new Date().toLocaleTimeString();
+
+    labels.push(time);
+
+    rpmData.push(data.rpm);
+    lopData.push(data.lub_oil_pressure);
+    tempData.push(data.jacket_cw_outlet_temp);
+
+    if(labels.length > 20){
+        labels.shift();
+        rpmData.shift();
+        lopData.shift();
+        tempData.shift();
+    }
+
+    rpmChart.update();
+    lopChart.update();
+    tempChart.update();
+}
+
+setInterval(fetchData, 1000);
+
+</script>
+
+</body>
+</html>
