@@ -14,6 +14,8 @@ The project investigates how sensor data, vessel operating conditions, propulsio
 
 Rather than replacing existing onboard automation systems, MEGA-RRTMIAS aims to provide contextual understanding of vessel operation through simulation, digital twins, and engineering analytics.
 
+MEGA-RRTMIAS is based on the idea that engineering systems should reduce cognitive workload by maintaining operational context, correlating historical events, and assisting decision-making, rather than relying solely on alarms or manual record-keeping.
+
 ---
 
 ## Primary Objectives
