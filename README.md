@@ -1,6 +1,6 @@
-# MEGA-RRTMIAS
+# MEGA-RRTMIS
 
-## Marine Equipment Gateway Architecture for Remote Real-Time Monitoring, Intelligence, Analytics & Simulation
+## Marine Equipment Gateway Architecture for Remote Real-Time Monitoring, Intelligence & Simulation
 
 > A modular, simulation-driven and physics-informed architecture for real-time monitoring, engineering reasoning, diagnostics, and digital twin development in marine propulsion and power systems.
 
@@ -8,7 +8,7 @@
 
 ## Project Vision
 
-MEGA-RRTMIAS explores the convergence of marine engineering, industrial automation, physics-based modelling, and operational intelligence.
+MEGA-RRTMIS explores the convergence of marine engineering, industrial automation, physics-based modelling, and operational intelligence.
 
 The project is designed as a **decentralised, edge-deployable engineering software architecture** that can operate alongside existing onboard automation systems such as Power Management Systems (PMS), Alarm Monitoring Systems (AMS), engine controllers, PLCs, and other industrial control systems.
 
@@ -897,7 +897,7 @@ Connect the same physics and reasoning stack to:
 
 # Research Philosophy
 
-MEGA-RRTMIAS is built around a strict separation between **measurement, physical inference, engineering reasoning, and language generation**.
+MEGA-RRTMIS is built around a strict separation between **measurement, physical inference, engineering reasoning, and language generation**.
 
 The project does not aim to create an opaque AI system that predicts failures from sensor data alone.
 
@@ -958,7 +958,7 @@ The immediate development focus is:
 
 # Disclaimer
 
-MEGA-RRTMIAS is an independent engineering research and development project intended for learning, simulation, and architectural exploration.
+MEGA-RRTMIS is an independent engineering research and development project intended for learning, simulation, and architectural exploration.
 
 The repository does not represent certified marine control software and should not be used for operational vessel control.
 
